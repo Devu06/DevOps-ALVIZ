@@ -1,0 +1,162 @@
+<%- include('partials/header') %>
+
+<script type="text/javascript">
+
+  var rows, cols;
+  // i have used grid which is a 1-d array that stores the cells
+  var grid = [];
+  var current;
+  var stack = [];
+  var w =100;
+  // setup function creates canvas and initialize rows and cols to a certain number which later is used to create new cell objects which is then stored in grid array and currently
+  // are at grid[0].
+  function setup() {
+  alert(' Please read the following lines carefully to understand the algorithm->>This is the implementation of DFS algorithm which is used to generate maze by implementing recursive backtracker. It initialize our tracker at starting of grid and traverse through the grid visiting all the cells neighbours and backtracks when get stuck . If you see carefully whenever it gets stuck it comes back to the previous cell where neighbour exist thats the implementation of Dfs i.e. to search to depth till stuck and backtacks to previous highlighted cell and go its depth and repeats this process to eventually reach the original starting position.Refresh the screen to generate new maze by clicking ok again or to read these lines again.');
+     createCanvas(windowWidth, windowHeight);
+      cols = floor(width/w);
+      rows = floor(height/w);
+      frameRate(4);
+      for (var j = 0; j<rows; j++){
+          for (var i = 0; i < cols; i++) {
+              var cell = new Cell(i,j);
+              grid.push(cell);
+          }
+      }
+      current = grid[0];
+  }//
+
+  //shows the grid to use the user by calling show function and implements the dfs algo
+
+
+  function draw(){
+      background(255);
+      for (var i = 0; i<grid.length; i++){
+          grid[i].show();
+      }
+  	// current is visited and always highlighted to show the path
+      current.visited = true;
+      current.highlight();
+  	// once its done it checks for the neighbours if they exist then visit them and push them into our stcak and remove walls between them and mark update current
+  	// other as dfs says pick the pushed element from stack and use that as current if there is available
+      var next = current.checkNeighbours();
+      if (next) {
+          next.visited = true;
+          stack.push(current);
+          removeWalls(current,next);
+          current = next;
+      }
+
+      else if(stack.length > 0){
+          current = stack.pop();
+      }
+  	// once there is no next available and stack is also empty our dfs search is completed.
+  }
+  // this fuction is used to give the current location of cells so the cells so that i can call the grid fuction as a 2-d array
+  function index(i,j){
+      if (i < 0 || j < 0 || i > cols-1 || j > rows-1) {
+          return -1;
+      }
+      return i + j * cols;
+  }
+  //  cells forms the all the cells of grid and initialize all the walls to true so that walls which is later used to remove and form the path
+
+  // this is where dfs is implemented
+  function Cell(i,j){
+      this.i = i;
+      this.j = j;
+      this.walls = [true,true,true,true];
+      this.visited = false;
+  	// it checks for available neighbours and calls for all of them and then later push them into my neighbours array if they exist and retern random from the length so every time
+  	// a new direction follows to create new maze
+      this.checkNeighbours = function(){
+          var neighbours = [];
+          var top =       grid[index(i, j-1)];
+          var right =     grid[index(i+1, j)];
+          var bottom =    grid[index(i, j+1)];
+          var left =      grid[index(i-1, j)];
+          if (top && !top.visited){
+              neighbours.push(top);
+          }
+          if (right && !right.visited){
+              neighbours.push(right);
+          }
+          if (bottom && !bottom.visited){
+              neighbours.push(bottom);
+          }
+          if (left && !left.visited){
+              neighbours.push(left);
+          }
+
+          if (neighbours.length > 0){
+              var r = floor(random(0, neighbours.length));
+              return neighbours[r];
+          }
+          else{
+              return undefined;
+          }
+      }
+  	// this basically highlights  the current (x y) cell to use where the tracker is currently and is in the form of rectangle only which fits the grid size
+      this.highlight = function(){
+          x = this.i*w;
+          y = this.j*w;
+          noStroke();
+          fill(255,0,100,200);
+          rect(x,y,w,w);
+      }
+  	// interpret the rectangle as a 4 wall and then draw lines on the  such that rectangle shape apears but instead its TOP,RIGHT BOTTOM,LEFT.
+      this.show = function(){
+          x = this.i*w;
+          y = this.j*w;
+          stroke(0);
+          if (this.walls[0]){
+              line(x   ,y    ,x+w ,y);
+          }
+          if (this.walls[1]){
+              line(x+w ,y    ,x+w ,y+w);
+          }
+          if (this.walls[2]){
+              line(x+w ,y+w ,x   ,y+w);
+          }
+          if (this.walls[3]){
+              line(x   ,y+w  ,x   ,y)
+          }
+          if (this.visited) {
+              noStroke();
+              fill(100,0,255,100);
+              rect(x,y,w,w);
+          }
+      }
+  }
+  // this is used to remove walls between two blocks
+  function removeWalls(a,b){
+      var x = a.i - b.i;
+      if (x === 1){
+          a.walls[3] = false;
+          b.walls[1] = false;
+      }
+      else if (x === -1){
+          a.walls[1] = false;
+          b.walls[3] = false;
+      }
+      var y = a.j - b.j;
+      if (y === 1){
+          a.walls[0] = false;
+          b.walls[2] = false;
+      }
+      else if (y === -1){
+          a.walls[2] = false;
+          b.walls[0] = false;
+      }
+  }
+  function mousePressed() {
+    noLoop();
+  }
+
+  function mouseReleased() {
+    loop();
+  }
+
+</script>
+
+
+<%- include('partials/footer') %>
